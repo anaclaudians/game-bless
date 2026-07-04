@@ -221,8 +221,8 @@ export default function App() {
         </div>
         
         <div className="space-y-1">
-          <h1 className={`text-5xl font-extrabold ${theme.textMain} tracking-tight font-sans`}>Holy Cards</h1>
-          <p className="text-sm text-gray-600 font-bold uppercase tracking-wider">Escolha seu momento de comunhão</p>
+          <h1 className={`text-5xl font-extrabold ${theme.textMain} tracking-tight font-sans`}>Game Bless</h1>
+          <p className="text-sm text-gray-600 font-bold uppercase tracking-wider">Diversão e Palavra em Família!</p>
         </div>
       </div>
 
