@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-holy-bg: #F4E3D7;
+  --color-holy-card: #E0664B;
+  --color-holy-text: #3D2C28;
+  --color-holy-light: #FEF8F5;
+  --color-holy-accent: #C25134;
+  
+  --font-sans: "Outfit", "Quicksand", "system-ui", "sans-serif";
+  
+  --animate-fade-in: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility bg-holy-bg {
+  background-color: var(--color-holy-bg);
+}
+@utility text-holy-text {
+  color: var(--color-holy-text);
+}
+@utility bg-holy-card {
+  background-color: var(--color-holy-card);
+}
+@utility bg-holy-accent {
+  background-color: var(--color-holy-accent);
+}
+
+@layer base {
+  body {
+    background-color: var(--color-holy-bg);
+    color: var(--color-holy-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+}
