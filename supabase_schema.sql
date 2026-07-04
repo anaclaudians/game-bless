@@ -46,23 +46,23 @@ ON cartas FOR SELECT
 TO anon 
 USING (true);
 
--- 6. Inserção do Catálogo de Jogos (Com Regras e Capas)
+-- 6. Inserção do Catálogo de Jogos (Com Regras e Capas Exclusivas)
 INSERT INTO jogos (id, nome, tipo, cor, capa, regras) VALUES
 ('quem-sou-eu', 'Quem Sou Eu?', 'dicas', '#E0664B', '/capa-quem-sou-eu.png', 'Leia as dicas uma a uma. O jogador deve adivinhar o personagem bíblico descrito. Quanto menos dicas usar, melhor!'),
 ('palavra-proibida', 'Palavra Bíblica Proibida', 'acao', '#C25134', '/capa-palavra-proibida.png', 'Tente fazer sua equipe adivinhar a palavra principal da carta. ATENÇÃO: É proibido falar qualquer uma das outras 5 palavras listadas na carta!'),
-('quem-disse', 'Quem Disse?', 'quiz', '#9E4733', '/capa-quiz.png', 'Leia o versículo bíblico apresentado na tela e selecione o autor correto da frase entre as quatro opções de resposta.'),
-('qual-versiculo-sou', 'Qual Versículo Sou?', 'dicas', '#D17A22', '/capa-quiz.png', 'Adivinhe qual é o versículo ou Salmo descrito através de 3 pistas progressivas sobre o seu significado e conteúdo.'),
-('o-que-sou', 'O Que Sou?', 'dicas', '#9A5B43', '/capa-quem-sou-eu.png', 'Adivinhe qual objeto, animal ou local sagrado da Bíblia está sendo descrito com base em 3 pistas inteligentes.'),
-('quem-sabe-responde', 'Quem Sabe, Responde!', 'quiz', '#6B4F4F', '/capa-quiz.png', 'Um teste clássico de conhecimentos bíblicos gerais de múltipla escolha. Escolha a resposta certa entre as 4 alternativas.'),
+('quem-disse', 'Quem Disse?', 'quiz', '#9E4733', '/capa-quem-disse.png', 'Leia o versículo bíblico apresentado na tela e selecione o autor correto da frase entre as quatro opções de resposta.'),
+('qual-versiculo-sou', 'Qual Versículo Sou?', 'dicas', '#D17A22', '/capa-qual-versiculo-sou.png', 'Adivinhe qual é o versículo ou Salmo descrito através de 3 pistas progressivas sobre o seu significado e conteúdo.'),
+('o-que-sou', 'O Que Sou?', 'dicas', '#9A5B43', '/capa-o-que-sou.png', 'Adivinhe qual objeto, animal ou local sagrado da Bíblia está sendo descrito com base em 3 pistas inteligentes.'),
+('quem-sabe-responde', 'Quem Sabe, Responde!', 'quiz', '#6B4F4F', '/capa-quem-sabe-responde.png', 'Um teste clássico de conhecimentos bíblicos gerais de múltipla escolha. Escolha a resposta certa entre as 4 alternativas.'),
 ('biblimimicas', 'Bíblimímicas', 'acao', '#B55A30', '/capa-biblimimicas.png', 'Um jogador deve encenar em mímica a ação ou passagem bíblica exibida na tela. O restante do grupo tenta adivinhar. O tempo está correndo!'),
-('quem-sou-eu-extreme', 'Quem Sou Eu? (Extreme)', 'dicas', '#842E1B', '/capa-faz-sentido.png', 'Para estudiosos da Bíblia! Adivinhe o personagem com base em 3 pistas sobre detalhes obscuros ou pouco conhecidos das Escrituras.'),
-('onde-estou', 'Onde Estou?', 'dicas', '#9E4773', '/capa-quem-sou-eu.png', 'Descubra qual cidade, monte, rio ou localidade geográfica da Bíblia está sendo descrita pelas 3 pistas progressivas.'),
-('familias-da-biblia', 'Famílias da Bíblia', 'quiz', '#7A8B47', '/capa-faz-sentido.png', 'Teste seus conhecimentos sobre as linhagens, casamentos, parentescos e histórias das famílias que marcaram as Escrituras.'),
+('quem-sou-eu-extreme', 'Quem Sou Eu? (Extreme)', 'dicas', '#842E1B', '/capa-quem-sou-eu-extreme.png', 'Para estudiosos da Bíblia! Adivinhe o personagem com base em 3 pistas sobre detalhes obscuros ou pouco conhecidos das Escrituras.'),
+('onde-estou', 'Onde Estou?', 'dicas', '#9E4773', '/capa-onde-estou.png', 'Descubra qual cidade, monte, rio ou localidade geográfica da Bíblia está sendo descrita pelas 3 pistas progressivas.'),
+('familias-da-biblia', 'Famílias da Bíblia', 'quiz', '#7A8B47', '/capa-familias-da-biblia.png', 'Teste seus conhecimentos sobre as linhagens, casamentos, parentescos e histórias das famílias que marcaram as Escrituras.'),
 ('faz-sentido', 'Faz Sentido?', 'acao', '#D15E84', '/capa-faz-sentido.png', 'Debate e conexão! Jogue cartas de conceitos físicos e veja se eles têm relação lógica com a carta no centro da mesa. Votem e gerenciem as 3 vidas locais de cada um dos 4 participantes.'),
-('desafio-versiculos', 'Desafio dos Versículos', 'quiz', '#39A087', '/capa-quiz.png', 'Complete a palavra ausente ou adivinhe o versículo-chave correto apresentado na pergunta de múltipla escolha.');
+('desafio-versiculos', 'Desafio dos Versículos', 'quiz', '#39A087', '/capa-desafio-versiculos.png', 'Complete a palavra ausente ou adivinhe o versículo-chave correto apresentado na pergunta de múltipla escolha.');
 
 -- 7. Inserção de Amostras de Cartas por Níveis (Exemplos representativos de semente)
--- Cartas para "Quem Sou Eu?" (Fácil, Médio, Difícil)
+-- Cartas para "Quem Sou Eu?"
 INSERT INTO cartas (jogo_id, dificuldade, dicas, resposta, referencia, icone) VALUES
 ('quem-sou-eu', 'facil', '["Fui colocado numa arca para escapar do dilúvio.", "Deus enviou um arco-íris como promessa.", "Levei casais de animais de cada espécie."]', 'Noé', 'Gênesis 6-9', 'ship'),
 ('quem-sou-eu', 'facil', '["Derrotei o gigante Golias com uma funda.", "Fui o rei mais famoso de Israel.", "Escrevi muitos dos Salmos."]', 'Davi', '1 Samuel 17', 'crown'),
@@ -98,7 +98,7 @@ INSERT INTO cartas (jogo_id, dificuldade, palavra, dicas, resposta, referencia, 
 ('quem-sabe-responde', 'dificil', 'Qual foi o homem mais velho citado na Bíblia, vivendo 969 anos?', '["Matusalém", "Noé", "Adão", "Enoque"]'::jsonb, 'Matusalém', 'Gênesis 5:27', 'list'),
 ('quem-sabe-responde', 'dificil', 'Quantos anos o povo hebreu peregrinou pelo deserto?', '["10", "40", "70", "100"]'::jsonb, '40', 'Josué 5:6', 'list');
 
--- Cartas para "Faz Sentido?" (Conceitos para o debate de mesa)
+-- Cartas para "Faz Sentido?"
 INSERT INTO cartas (jogo_id, dificuldade, palavra, icone) VALUES
 ('faz-sentido', 'facil', 'A Arca de Noé salvando casais de animais.', 'ship'),
 ('faz-sentido', 'facil', 'Davi derrotando o gigante com uma pedra.', 'crown'),
