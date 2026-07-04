@@ -4,54 +4,7 @@ import {
   Crown, Ship, Scroll, HelpCircle, MessageSquare, BookOpen, List, Smile, Zap 
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
-
-// --- MOCK DO BANCO DE DADOS DE FALLBACK (Catálogo Completo com Capas) ---
-const mockDatabase = {
-  jogos: [
-    { id: 'quem-sou-eu', nome: 'Quem Sou Eu?', tipo: 'dicas', cor: '#E0664B', capa: '/capa-quem-sou-eu.png' },
-    { id: 'palavra-proibida', nome: 'Palavra Bíblica Proibida', tipo: 'acao', cor: '#C25134', capa: '/capa-palavra-proibida.png' },
-    { id: 'quem-disse', nome: 'Quem Disse?', tipo: 'quiz', cor: '#9E4733', capa: '/capa-quiz.png' },
-    { id: 'qual-versiculo-sou', nome: 'Qual Versículo Sou?', tipo: 'dicas', cor: '#D17A22', capa: '/capa-quiz.png' }, 
-    { id: 'o-que-sou', nome: 'O Que Sou?', tipo: 'dicas', cor: '#9A5B43', capa: '/capa-quem-sou-eu.png' },       
-    { id: 'quem-sabe-responde', nome: 'Quem Sabe, Responde!', tipo: 'quiz', cor: '#6B4F4F', capa: '/capa-quiz.png' },
-    { id: 'biblimimicas', nome: 'Bíblimímicas', tipo: 'acao', cor: '#B55A30', capa: '/capa-biblimimicas.png' },
-    { id: 'quem-sou-eu-extreme', nome: 'Quem Sou Eu? (Extreme)', tipo: 'dicas', cor: '#842E1B', capa: '/capa-faz-sentido.png' }
-  ],
-  cartas: {
-    'quem-sou-eu': [
-      { id: 'q1', dicas: ["Fui vendido pelos meus irmãos", "Interpretei os sonhos do Faraó", "Me tornei governador do Egito"], resposta: "José", referencia: "Gênesis 37-50", icone: "scroll" },
-      { id: 'q2', dicas: ["Fui o primeiro rei de Israel", "Fui ungido por Samuel", "Perdi meu reinado por desobediência"], resposta: "Saul", referencia: "1 Samuel 9-31", icone: "crown" }
-    ],
-    'palavra-proibida': [
-      { id: 'p1', palavra: "Arca de Noé", proibidas: ["Noé", "Chuva", "Dilúvio", "Animais", "Barco"], icone: "ship" },
-      { id: 'p2', palavra: "Davi", proibidas: ["Golias", "Rei", "Funda", "Harpa", "Ovelhas"], icone: "crown" }
-    ],
-    'quem-disse': [
-      { id: 'd1', palavra: 'De quem é a famosa fala: "Eu e a minha casa serviremos ao Senhor"?', dicas: ["Moisés", "Josué", "Davi", "Samuel"], resposta: "Josué", referencia: "Josué 24:15", icone: "message-square" },
-      { id: 'd2', palavra: 'Quem disse: "Para onde fores irei, e onde tu pousares, ali poisei; o teu povo é o meu povo"?', dicas: ["Rute", "Ester", "Maria", "Sara"], resposta: "Rute", referencia: "Rute 1:16", icone: "message-square" }
-    ],
-    'qual-versiculo-sou': [
-      { id: 'v1', dicas: ["Falo sobre o amor sacrificial de Deus pelo mundo.", "Fico localizado no Evangelho de João, no capítulo 3.", "Declaro que todo aquele que crer no Filho não pereça, mas tenha a vida eterna."], resposta: "João 3:16", referencia: "João 3:16", icone: "book-open" },
-      { id: 'v2', dicas: ["Falo sobre a proteção divina em meio ao perigo.", "Meu versículo mais famoso diz: 'Mil cairão ao teu lado, e dez mil à tua direita, mas não chegará a ti'.", "Sou o Salmo mais lido em momentos de tribulação."], resposta: "Salmo 91", referencia: "Salmo 91", icone: "book-open" }
-    ],
-    'o-que-sou': [
-      { id: 'o1', dicas: ["Fui feita de madeira de acácia e revestida de ouro puro.", "Guardava as tábuas da Lei, um vaso com maná e a vara de Arão.", "Ficava no Santo dos Santos do Tabernáculo."], resposta: "Arca da Aliança", referencia: "Êxodo 25", icone: "help-circle" },
-      { id: 'o2', dicas: ["Fui lançado por um jovem pastor de ovelhas.", "Atingi a testa de um gigante filisteu.", "Fui a arma usada por Davi contra Golias."], resposta: "Uma pedra (de funda)", referencia: "1 Samuel 17", icone: "help-circle" }
-    ],
-    'quem-sabe-responde': [
-      { id: 'sr1', palavra: "Quantos discípulos Jesus escolheu inicialmente para segui-lo?", dicas: ["7", "10", "12", "70"], resposta: "12", referencia: "Mateus 10:1", icone: "list" },
-      { id: 'sr2', palavra: "Qual destas mulheres foi uma juíza em Israel?", dicas: ["Débora", "Rute", "Sara", "Noemi"], resposta: "Débora", referencia: "Juízes 4:4", icone: "list" }
-    ],
-    'biblimimicas': [
-      { id: 'm1', palavra: "Caminhar sobre as águas (Mímica)", proibidas: ["Jesus", "Pedro", "Mar", "Barco", "Afundar"], icone: "smile" },
-      { id: 'm2', palavra: "Derrubar as muralhas de Jericó (Mímica)", proibidas: ["Buzina", "Trombeta", "Muro", "Grito", "Rodeador"], icone: "smile" }
-    ],
-    'quem-sou-eu-extreme': [
-      { id: 'ex1', dicas: ["Fui o escriba que registrou as profecias de Jeremias.", "Meu nome significa 'Bendito'.", "Tive um rolo de pergaminho queimado pelo rei Joaquim."], resposta: "Baruque", referencia: "Jeremias 36", icone: "zap" },
-      { id: 'ex2', dicas: ["Fui a única mulher citada na genealogia de Jesus como mãe de Salomão.", "Fui esposa de Urias, o heteu, antes de me casar com Davi.", "Fui mãe do rei Salomão."], resposta: "Bate-Seba", referencia: "2 Samuel 11", icone: "zap" }
-    ]
-  }
-};
+import { mockDatabase } from './lib/mockDatabase';
 
 export default function App() {
   const [telaAtual, setTelaAtual] = useState('menu'); 
@@ -436,11 +389,11 @@ export default function App() {
         {/* Corpo da Carta */}
         <div className="flex-1 flex items-center justify-center w-full">
           {jogoAtivo.tipo === 'acao' ? (
-            <TelaJogandoAcao carta={carta} />
+            <TelaJogandoAcao key={cartaAtualIndex} carta={carta} />
           ) : jogoAtivo.tipo === 'quiz' ? (
-            <TelaJogandoQuiz carta={carta} />
+            <TelaJogandoQuiz key={cartaAtualIndex} carta={carta} />
           ) : (
-            <TelaJogandoDicas carta={carta} />
+            <TelaJogandoDicas key={cartaAtualIndex} carta={carta} />
           )}
         </div>
 
