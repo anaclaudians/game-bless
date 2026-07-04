@@ -13,6 +13,7 @@ CREATE TABLE jogos (
     tipo TEXT NOT NULL CHECK (tipo IN ('dicas', 'acao', 'quiz')),
     cor TEXT NOT NULL,  -- Cores hexadecimais (ex: '#E0664B')
     capa TEXT,          -- Caminho da imagem de capa (ex: '/capa-quem-sou-eu.png')
+    regras TEXT,        -- Descrição sucinta das regras do jogo
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
@@ -20,8 +21,9 @@ CREATE TABLE jogos (
 CREATE TABLE cartas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     jogo_id TEXT NOT NULL REFERENCES jogos(id) ON DELETE CASCADE,
-    palavra TEXT,     -- Usado como Palavra Principal ou Pergunta no Quiz
-    proibidas JSONB,  -- Array de strings para 'Palavra Proibida'
+    dificuldade TEXT NOT NULL DEFAULT 'facil' CHECK (dificuldade IN ('facil', 'medio', 'dificil')),
+    palavra TEXT,     -- Usado como Palavra Principal, Pergunta ou Conceito
+    proibidas JSONB,  -- Array de strings para 'Palavra Proibida' e 'Bíblimímicas'
     dicas JSONB,      -- Array de dicas progressivas OU alternativas no Quiz
     resposta TEXT,    -- Resposta correta
     referencia TEXT,  -- Referência bíblica
@@ -44,53 +46,63 @@ ON cartas FOR SELECT
 TO anon 
 USING (true);
 
--- 6. Inserção de Dados (Catálogo Completo da Penkal Books com Capas Artísticas)
-INSERT INTO jogos (id, nome, tipo, cor, capa) VALUES
-('quem-sou-eu', 'Quem Sou Eu?', 'dicas', '#E0664B', '/capa-quem-sou-eu.png'),
-('palavra-proibida', 'Palavra Bíblica Proibida', 'acao', '#C25134', '/capa-palavra-proibida.png'),
-('quem-disse', 'Quem Disse?', 'quiz', '#9E4733', '/capa-quiz.png'),
-('qual-versiculo-sou', 'Qual Versículo Sou?', 'dicas', '#D17A22', '/capa-quiz.png'), -- Compartilha ilustração de Quiz
-('o-que-sou', 'O Que Sou?', 'dicas', '#9A5B43', '/capa-quem-sou-eu.png'),       -- Compartilha ilustração de Dicas
-('quem-sabe-responde', 'Quem Sabe, Responde!', 'quiz', '#6B4F4F', '/capa-quiz.png'),
-('biblimimicas', 'Bíblimímicas', 'acao', '#B55A30', '/capa-biblimimicas.png'),
-('quem-sou-eu-extreme', 'Quem Sou Eu? (Extreme)', 'dicas', '#842E1B', '/capa-faz-sentido.png');
+-- 6. Inserção do Catálogo de Jogos (Com Regras e Capas)
+INSERT INTO jogos (id, nome, tipo, cor, capa, regras) VALUES
+('quem-sou-eu', 'Quem Sou Eu?', 'dicas', '#E0664B', '/capa-quem-sou-eu.png', 'Leia as dicas uma a uma. O jogador deve adivinhar o personagem bíblico descrito. Quanto menos dicas usar, melhor!'),
+('palavra-proibida', 'Palavra Bíblica Proibida', 'acao', '#C25134', '/capa-palavra-proibida.png', 'Tente fazer sua equipe adivinhar a palavra principal da carta. ATENÇÃO: É proibido falar qualquer uma das outras 5 palavras listadas na carta!'),
+('quem-disse', 'Quem Disse?', 'quiz', '#9E4733', '/capa-quiz.png', 'Leia o versículo bíblico apresentado na tela e selecione o autor correto da frase entre as quatro opções de resposta.'),
+('qual-versiculo-sou', 'Qual Versículo Sou?', 'dicas', '#D17A22', '/capa-quiz.png', 'Adivinhe qual é o versículo ou Salmo descrito através de 3 pistas progressivas sobre o seu significado e conteúdo.'),
+('o-que-sou', 'O Que Sou?', 'dicas', '#9A5B43', '/capa-quem-sou-eu.png', 'Adivinhe qual objeto, animal ou local sagrado da Bíblia está sendo descrito com base em 3 pistas inteligentes.'),
+('quem-sabe-responde', 'Quem Sabe, Responde!', 'quiz', '#6B4F4F', '/capa-quiz.png', 'Um teste clássico de conhecimentos bíblicos gerais de múltipla escolha. Escolha a resposta certa entre as 4 alternativas.'),
+('biblimimicas', 'Bíblimímicas', 'acao', '#B55A30', '/capa-biblimimicas.png', 'Um jogador deve encenar em mímica a ação ou passagem bíblica exibida na tela. O restante do grupo tenta adivinhar. O tempo está correndo!'),
+('quem-sou-eu-extreme', 'Quem Sou Eu? (Extreme)', 'dicas', '#842E1B', '/capa-faz-sentido.png', 'Para estudiosos da Bíblia! Adivinhe o personagem com base em 3 pistas sobre detalhes obscuros ou pouco conhecidos das Escrituras.'),
+('onde-estou', 'Onde Estou?', 'dicas', '#9E4773', '/capa-quem-sou-eu.png', 'Descubra qual cidade, monte, rio ou localidade geográfica da Bíblia está sendo descrita pelas 3 pistas progressivas.'),
+('familias-da-biblia', 'Famílias da Bíblia', 'quiz', '#7A8B47', '/capa-faz-sentido.png', 'Teste seus conhecimentos sobre as linhagens, casamentos, parentescos e histórias das famílias que marcaram as Escrituras.'),
+('faz-sentido', 'Faz Sentido?', 'acao', '#D15E84', '/capa-faz-sentido.png', 'Debate e conexão! Jogue cartas de conceitos físicos e veja se eles têm relação lógica com a carta no centro da mesa. Votem e gerenciem as 3 vidas locais de cada um dos 4 participantes.'),
+('desafio-versiculos', 'Desafio dos Versículos', 'quiz', '#39A087', '/capa-quiz.png', 'Complete a palavra ausente ou adivinhe o versículo-chave correto apresentado na pergunta de múltipla escolha.');
 
--- Cartas para "Quem Sou Eu?"
-INSERT INTO cartas (jogo_id, dicas, resposta, referencia, icone) VALUES
-('quem-sou-eu', '["Fui vendido pelos meus irmãos", "Interpretei os sonhos do Faraó", "Me tornei governador do Egito"]'::jsonb, 'José', 'Gênesis 37-50', 'scroll'),
-('quem-sou-eu', '["Fui o primeiro rei de Israel", "Fui ungido por Samuel", "Perdi meu reinado por desobediência"]'::jsonb, 'Saul', '1 Samuel 9-31', 'crown');
+-- 7. Inserção de Amostras de Cartas por Níveis (Exemplos representativos de semente)
+-- Cartas para "Quem Sou Eu?" (Fácil, Médio, Difícil)
+INSERT INTO cartas (jogo_id, dificuldade, dicas, resposta, referencia, icone) VALUES
+('quem-sou-eu', 'facil', '["Fui colocado numa arca para escapar do dilúvio.", "Deus enviou um arco-íris como promessa.", "Levei casais de animais de cada espécie."]', 'Noé', 'Gênesis 6-9', 'ship'),
+('quem-sou-eu', 'facil', '["Derrotei o gigante Golias com uma funda.", "Fui o rei mais famoso de Israel.", "Escrevi muitos dos Salmos."]', 'Davi', '1 Samuel 17', 'crown'),
+('quem-sou-eu', 'medio', '["Fui um cobrador de impostos muito baixo.", "Subi em uma árvore figueira brava para ver Jesus.", "Jesus almoçou na minha casa."]', 'Zaqueu', 'Lucas 19:1-10', 'help-circle'),
+('quem-sou-eu', 'medio', '["Julgava o povo debaixo de uma palmeira.", "Fui a única juíza mulher de Israel.", "Fui à batalha com Baraque."]', 'Débora', 'Juízes 4-5', 'scroll'),
+('quem-sou-eu', 'dificil', '["Fui o primeiro mártir da igreja cristã.", "Fui apedrejado enquanto via os céus abertos.", "Paulo presenciou a minha morte."]', 'Estêvão', 'Atos 7', 'zap'),
+('quem-sou-eu', 'dificil', '["Fui o sumo sacerdote que criei o jovem Samuel.", "Meus filhos Hofni e Finéias pecaram contra Deus.", "Morri ao cair de costas da cadeira."]', 'Eli', '1 Samuel 1-4', 'zap');
 
 -- Cartas para "Palavra Bíblica Proibida"
-INSERT INTO cartas (jogo_id, palavra, proibidas, icone) VALUES
-('palavra-proibida', 'Arca de Noé', '["Noé", "Chuva", "Dilúvio", "Animais", "Barco"]'::jsonb, 'ship'),
-('palavra-proibida', 'Davi', '["Golias", "Rei", "Funda", "Harpa", "Ovelhas"]'::jsonb, 'crown');
+INSERT INTO cartas (jogo_id, dificuldade, palavra, proibidas, icone) VALUES
+('palavra-proibida', 'facil', 'Moisés', '["Mar Vermelho", "Egito", "Pragas", "Cajado", "Mandamentos"]', 'scroll'),
+('palavra-proibida', 'facil', 'Cruz', '["Jesus", "Morte", "Calvário", "Madeiro", "Salvação"]', 'zap'),
+('palavra-proibida', 'medio', 'Maná', '["Deserto", "Comida", "Céu", "Povo", "Moisés"]', 'scroll'),
+('palavra-proibida', 'medio', 'Torre de Babel', '["Línguas", "Céu", "Tijolo", "Confusão", "Construir"]', 'help-circle'),
+('palavra-proibida', 'dificil', 'Gideão', '["Lã", "300", "Jarro", "Trombeta", "Midianitas"]', 'zap'),
+('palavra-proibida', 'dificil', 'Estrela de Belém', '["Jesus", "Nascimento", "Magos", "Céu", "Oriente"]', 'crown');
 
 -- Cartas para "Quem Disse?"
-INSERT INTO cartas (jogo_id, palavra, dicas, resposta, referencia, icone) VALUES
-('quem-disse', 'De quem é a famosa fala: "Eu e a minha casa serviremos ao Senhor"?', '["Moisés", "Josué", "Davi", "Samuel"]'::jsonb, 'Josué', 'Josué 24:15', 'message-square'),
-('quem-disse', 'Quem disse: "Para onde fores irei, e onde tu pousares, ali pousarei; o teu povo é o meu povo"?', '["Rute", "Ester", "Maria", "Sara"]'::jsonb, 'Rute', 'Rute 1:16', 'message-square');
-
--- Cartas para "Qual Versículo Sou?"
-INSERT INTO cartas (jogo_id, dicas, resposta, referencia, icone) VALUES
-('qual-versiculo-sou', '["Falo sobre o amor sacrificial de Deus pelo mundo.", "Fico localizado no Evangelho de João, no capítulo 3.", "Declaro que todo aquele que crer no Filho não pereça, mas tenha a vida eterna."]'::jsonb, 'João 3:16', 'João 3:16', 'book-open'),
-('qual-versiculo-sou', '["Falo sobre a proteção divina em meio ao perigo.", "Meu versículo mais famoso diz: ''Mil cairão ao teu lado, e dez mil à tua direita, mas não chegará a ti''.", "Sou o Salmo mais lido em momentos de tribulação."]'::jsonb, 'Salmo 91', 'Salmo 91', 'book-open');
-
--- Cartas para "O Que Sou?"
-INSERT INTO cartas (jogo_id, dicas, resposta, referencia, icone) VALUES
-('o-que-sou', '["Fui feita de madeira de acácia e revestida de ouro puro.", "Guardava as tábuas da Lei, um vaso com maná e a vara de Arão.", "Ficava no Santo dos Santos do Tabernáculo."]'::jsonb, 'Arca da Aliança', 'Êxodo 25', 'help-circle'),
-('o-que-sou', '["Fui lançado por um jovem pastor de ovelhas.", "Atingi a testa de um gigante filisteu.", "Fui a arma usada por Davi contra Golias."]'::jsonb, 'Uma pedra (de funda)', '1 Samuel 17', 'help-circle');
+INSERT INTO cartas (jogo_id, dificuldade, palavra, dicas, resposta, referencia, icone) VALUES
+('quem-disse', 'facil', 'Quem disse: "Eu e a minha casa serviremos ao Senhor"?', '["Moisés", "Josué", "Davi", "Samuel"]'::jsonb, 'Josué', 'Josué 24:15', 'message-square'),
+('quem-disse', 'facil', 'Quem disse: "O Senhor é o meu pastor, nada me faltará"?', '["Salomão", "Davi", "Moisés", "Isaías"]'::jsonb, 'Davi', 'Salmo 23:1', 'message-square'),
+('quem-disse', 'medio', 'Quem disse a Jesus: "Se tu estivesses aqui, meu irmão não teria morrido"?', '["Maria", "Marta", "Isabel", "Madalena"]'::jsonb, 'Marta', 'João 11:21', 'message-square'),
+('quem-disse', 'medio', 'Quem disse: "Até aqui nos ajudou o Senhor"?', '["Saul", "Samuel", "Davi", "Josué"]'::jsonb, 'Samuel', '1 Samuel 7:12', 'message-square'),
+('quem-disse', 'dificil', 'Quem disse a Davi: "Tu és este homem!" revelando seu pecado?', '["Samuel", "Natã", "Gad", "Elias"]'::jsonb, 'Natã', '2 Samuel 12:7', 'message-square'),
+('quem-disse', 'dificil', 'Quem exclamou: "Ainda que ele me mate, nele esperarei"?', '["Jó", "Davi", "Abraão", "Jeremias"]'::jsonb, 'Jó', 'Jó 13:15', 'message-square');
 
 -- Cartas para "Quem Sabe, Responde!"
-INSERT INTO cartas (jogo_id, palavra, dicas, resposta, referencia, icone) VALUES
-('quem-sabe-responde', 'Quantos discípulos Jesus escolheu inicialmente para segui-lo?', '["7", "10", "12", "70"]'::jsonb, '12', 'Mateus 10:1', 'list'),
-('quem-sabe-responde', 'Qual destas mulheres foi uma juíza em Israel?', '["Débora", "Rute", "Sara", "Noemi"]'::jsonb, 'Débora', 'Juízes 4:4', 'list');
+INSERT INTO cartas (jogo_id, dificuldade, palavra, dicas, resposta, referencia, icone) VALUES
+('quem-sabe-responde', 'facil', 'Quantos discípulos Jesus escolheu inicialmente?', '["7", "10", "12", "70"]'::jsonb, '12', 'Mateus 10:1', 'list'),
+('quem-sabe-responde', 'facil', 'Qual o primeiro livro contido na Bíblia?', '["Êxodo", "Mateus", "Gênesis", "João"]'::jsonb, 'Gênesis', 'Gênesis 1:1', 'list'),
+('quem-sabe-responde', 'medio', 'Quem foi o companheiro de Paulo que cantou com ele na prisão?', '["Pedro", "Silas", "Barnabé", "Timóteo"]'::jsonb, 'Silas', 'Atos 16:25', 'list'),
+('quem-sabe-responde', 'medio', 'Qual destas mulheres foi uma juíza em Israel?', '["Débora", "Sara", "Rute", "Ester"]'::jsonb, 'Débora', 'Juízes 4:4', 'list'),
+('quem-sabe-responde', 'dificil', 'Qual foi o homem mais velho citado na Bíblia, vivendo 969 anos?', '["Matusalém", "Noé", "Adão", "Enoque"]'::jsonb, 'Matusalém', 'Gênesis 5:27', 'list'),
+('quem-sabe-responde', 'dificil', 'Quantos anos o povo hebreu peregrinou pelo deserto?', '["10", "40", "70", "100"]'::jsonb, '40', 'Josué 5:6', 'list');
 
--- Cartas para "Bíblimímicas"
-INSERT INTO cartas (jogo_id, palavra, proibidas, icone) VALUES
-('biblimimicas', 'Caminhar sobre as águas (Mímica)', '["Jesus", "Pedro", "Mar", "Barco", "Afundar"]'::jsonb, 'smile'),
-('biblimimicas', 'Derrubar as muralhas de Jericó (Mímica)', '["Buzina", "Trombeta", "Muro", "Grito", "Rodeador"]'::jsonb, 'smile');
-
--- Cartas para "Quem Sou Eu? (Extreme)"
-INSERT INTO cartas (jogo_id, dicas, resposta, referencia, icone) VALUES
-('quem-sou-eu-extreme', '["Fui o escriba que registrou as profecias de Jeremias.", "Meu nome significa ''Bendito''.", "Tive um rolo de pergaminho queimado pelo rei Joaquim."]'::jsonb, 'Baruque', 'Jeremias 36', 'zap'),
-('quem-sou-eu-extreme', '["Fui a única mulher citada na genealogia de Jesus como mãe de Salomão.", "Fui esposa de Urias, o heteu, antes de me casar com Davi.", "Fui mãe do rei Salomão."]'::jsonb, 'Bate-Seba', '2 Samuel 11', 'zap');
+-- Cartas para "Faz Sentido?" (Conceitos para o debate de mesa)
+INSERT INTO cartas (jogo_id, dificuldade, palavra, icone) VALUES
+('faz-sentido', 'facil', 'A Arca de Noé salvando casais de animais.', 'ship'),
+('faz-sentido', 'facil', 'Davi derrotando o gigante com uma pedra.', 'crown'),
+('faz-sentido', 'medio', 'Moisés tirando as sandálias diante da sarça ardente.', 'scroll'),
+('faz-sentido', 'medio', 'Zaqueu devolvendo quatro vezes o valor cobrado.', 'help-circle'),
+('faz-sentido', 'dificil', 'O escriba Baruque registrando profecias de Jeremias.', 'zap'),
+('faz-sentido', 'dificil', 'Uzá tocando na Arca da Aliança e caindo morto.', 'help-circle');
