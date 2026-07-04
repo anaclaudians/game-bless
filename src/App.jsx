@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   Play, RotateCcw, Clock, Check, X, ChevronRight, Home, Database, AlertCircle, 
   Crown, Ship, Scroll, HelpCircle, MessageSquare, BookOpen, List, Smile, Zap,
-  Pause, Eye, EyeOff, Heart, Trophy, Users, User
+  Pause, Eye, EyeOff, Heart, Trophy, Users, User, ArrowLeft, Lightbulb, Sparkles, Brain, ThumbsDown
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { mockDatabase } from './lib/mockDatabase';
@@ -40,7 +40,8 @@ function Cronometro({ tempoInicial, ativo, pausado, tempoResetKey, onTempoAcabou
 }
 
 export default function App() {
-  const [telaAtual, setTelaAtual] = useState('menu'); 
+  const [telaAtual, setTelaAtual] = useState('modalidade'); // 'modalidade' | 'menu' | 'regras' | 'jogando' | 'resultado'
+  const [modalidadeAtiva, setModalidadeAtiva] = useState(null); // 'dicas' | 'acao' | 'quiz'
   const [jogos, setJogos] = useState([]);
   const [jogoAtivo, setJogoAtivo] = useState(null);
   const [cartasAtivas, setCartasAtivas] = useState([]);
@@ -123,6 +124,12 @@ export default function App() {
     fetchJogos();
   }, []);
 
+  // Seleciona a modalidade e vai para o menu filtrado
+  const escolherModalidade = (modalidade) => {
+    setModalidadeAtiva(modalidade);
+    setTelaAtual('menu');
+  };
+
   // Abre a tela intermediária de Regras e Seleção de Dificuldade
   const verRegras = (jogo) => {
     setJogoAtivo(jogo);
@@ -130,7 +137,6 @@ export default function App() {
     setModoJogo('individual');
     setQuantidadeEquipes(2);
     setEquipeAtivaIndex(0);
-    // Inicialização padrão de equipes
     setEquipes([
       { id: 1, nome: 'Equipe Leão', cor: '#EF4444', pontos: 0 },
       { id: 2, nome: 'Equipe Cordeiro', cor: '#3B82F6', pontos: 0 },
@@ -152,10 +158,7 @@ export default function App() {
     setTimerPausado(false);
     setEquipeAtivaIndex(0);
 
-    // Resetar os pontos de todas as equipes ativas
     setEquipes(prev => prev.map(eq => ({ ...eq, pontos: 0 })));
-
-    // Reset de vidas de jogadores para o Faz Sentido
     setVidasJogadores({ 1: 3, 2: 3, 3: 3, 4: 3 });
 
     try {
@@ -193,7 +196,6 @@ export default function App() {
     if (modoJogo === 'individual') {
       if (acertou) setPontos(p => p + 1);
     } else {
-      // Modo Equipe
       if (acertou) {
         setEquipes(prev => {
           const novas = [...prev];
@@ -201,7 +203,6 @@ export default function App() {
           return novas;
         });
       }
-      // Rotaciona a vez da equipe
       setEquipeAtivaIndex((prev) => (prev + 1) % quantidadeEquipes);
     }
     
@@ -234,7 +235,6 @@ export default function App() {
     }, 1500);
   };
 
-  // Funções de alteração de vidas para o Faz Sentido?
   const ajustarVida = (jogadorId, delta) => {
     setVidasJogadores(prev => {
       const novaVida = Math.max(0, Math.min(3, prev[jogadorId] + delta));
@@ -242,7 +242,6 @@ export default function App() {
     });
   };
 
-  // Edição do nome das equipes na configuração
   const editarNomeEquipe = (index, novoNome) => {
     setEquipes(prev => {
       const novas = [...prev];
@@ -251,7 +250,6 @@ export default function App() {
     });
   };
 
-  // Edição da cor das equipes na configuração
   const editarCorEquipe = (index, novaCor) => {
     setEquipes(prev => {
       const novas = [...prev];
@@ -260,7 +258,6 @@ export default function App() {
     });
   };
 
-  // Renderiza a ilustração temática da carta de forma estilizada
   const MedalhaoIlustracao = ({ tipoIcone }) => {
     const props = { size: 36, className: "text-holy-card transform hover:scale-110 transition-transform duration-300" };
     
@@ -286,75 +283,142 @@ export default function App() {
     );
   };
 
-  const TelaMenu = () => (
-    <div className="flex flex-col items-center justify-center p-6 space-y-6 w-full max-w-md mx-auto min-h-screen">
+  // TELA 0: Escolha de Modalidade de Jogo
+  const TelaEscolhaModalidade = () => (
+    <div className="flex flex-col items-center justify-center p-6 space-y-8 w-full max-w-md mx-auto min-h-screen">
       <div className="w-full text-center space-y-4">
         {/* Ilustração Temática Hero */}
-        <div className="relative w-full max-w-[280px] mx-auto rounded-3xl overflow-hidden shadow-lg border-4 border-white/50 bg-[#E0664B] aspect-[4/3] flex items-center justify-center">
+        <div className="relative w-full max-w-[240px] mx-auto rounded-3xl overflow-hidden shadow-md border-4 border-white bg-[#E0664B] aspect-[4/3] flex items-center justify-center">
           <img 
             src="/hero.png" 
             alt="Game Bless Hero" 
-            className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover"
           />
         </div>
         
         <div className="space-y-1">
-          <h1 className={`text-5xl font-extrabold ${theme.textMain} tracking-tight font-sans`}>Game Bless</h1>
-          <p className="text-sm text-gray-600 font-bold uppercase tracking-wider">Diversão e Palavra em Família!</p>
+          <h1 className={`text-5xl font-black ${theme.textMain} tracking-tight font-sans`}>Game Bless</h1>
+          <p className="text-xs text-gray-500 font-black uppercase tracking-wider">Escolha como deseja jogar hoje</p>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-holy-card"></div>
-          <p className="text-sm text-gray-600">Carregando jogos...</p>
-        </div>
-      ) : (
-        <div className="w-full grid grid-cols-2 gap-4 max-h-[55vh] overflow-y-auto pr-1 pb-2">
-          {jogos.map((jogo) => (
-            <button
-              key={jogo.id}
-              onClick={() => verRegras(jogo)}
-              className="flex flex-col bg-white rounded-3xl overflow-hidden shadow-md border border-orange-100/50 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 text-left group"
-            >
-              <div className="w-full aspect-[4/3] bg-orange-50 overflow-hidden relative border-b border-orange-100/30">
-                <img 
-                  src={jogo.capa || "/hero.png"} 
-                  alt={jogo.nome} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-2 right-2 bg-black/45 backdrop-blur-md px-2 py-0.5 rounded-full text-[9px] font-black text-white uppercase tracking-wider">
-                  {jogo.tipo === 'dicas' ? '💡 Dicas' : jogo.tipo === 'acao' ? '⚡ Ação' : '❓ Quiz'}
-                </div>
-              </div>
-              <div className="p-3 w-full flex-1 flex flex-col justify-between" style={{ borderTop: `4px solid ${jogo.cor}` }}>
-                <h3 className="text-sm font-black text-holy-text leading-tight group-hover:text-holy-card transition-colors min-h-[32px] flex items-center">{jogo.nome}</h3>
-                <div className="mt-2 flex items-center justify-between text-[11px] font-black text-holy-card uppercase tracking-wider">
-                  <span>Jogar</span>
-                  <Play size={12} fill="currentColor" className="transform group-hover:translate-x-0.5 transition-transform" />
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="w-full space-y-4">
+        {/* Botão Modalidade: Dicas */}
+        <button
+          onClick={() => escolherModalidade('dicas')}
+          className="w-full bg-white rounded-3xl p-5 shadow-md border border-orange-100 flex items-center text-left gap-4 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.01] active:scale-95 group"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0 group-hover:scale-105 transition-transform">
+            <Lightbulb size={24} fill="currentColor" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-holy-text">Desafios de Pistas</h3>
+            <p className="text-xs text-gray-500 font-medium">Adivinhe os mistérios bíblicos usando o menor número de pistas possíveis.</p>
+          </div>
+        </button>
 
-      {/* Indicador de Status do Banco de Dados */}
-      <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 bg-black/5 px-3 py-1.5 rounded-full mt-4">
+        {/* Botão Modalidade: Ação */}
+        <button
+          onClick={() => escolherModalidade('acao')}
+          className="w-full bg-white rounded-3xl p-5 shadow-md border border-orange-100 flex items-center text-left gap-4 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.01] active:scale-95 group"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0 group-hover:scale-105 transition-transform">
+            <Sparkles size={24} fill="currentColor" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-holy-text">Ação & Expressão</h3>
+            <p className="text-xs text-gray-500 font-medium">Mímicas corporais, proibição de palavras-chave e debates lógicos rápidos.</p>
+          </div>
+        </button>
+
+        {/* Botão Modalidade: Quiz */}
+        <button
+          onClick={() => escolherModalidade('quiz')}
+          className="w-full bg-white rounded-3xl p-5 shadow-md border border-orange-100 flex items-center text-left gap-4 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.01] active:scale-95 group"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0 group-hover:scale-105 transition-transform">
+            <Brain size={24} fill="currentColor" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-holy-text">Mestres do Conhecimento</h3>
+            <p className="text-xs text-gray-500 font-medium">Testes clássicos de perguntas e respostas bíblicas de múltipla escolha.</p>
+          </div>
+        </button>
+      </div>
+
+      {/* Indicador de Status */}
+      <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 bg-black/5 px-3 py-1 rounded-full mt-2">
         {usandoMock ? (
           <>
-            <AlertCircle size={14} className="text-orange-500" />
-            <span>Usando dados offline (Mock)</span>
+            <AlertCircle size={12} className="text-orange-400" />
+            <span>Banco Offline Ativo</span>
           </>
         ) : (
           <>
-            <Database size={14} className="text-green-600" />
-            <span>Conectado ao Supabase</span>
+            <Database size={12} className="text-green-500" />
+            <span>Banco Online Sincronizado</span>
           </>
         )}
       </div>
     </div>
   );
+
+  const TelaMenu = () => {
+    // Filtrar jogos da modalidade ativa
+    const jogosFiltrados = jogos.filter(j => j.tipo === modalidadeAtiva);
+    const tituloModalidade = modalidadeAtiva === 'dicas' ? '💡 Pistas e Adivinhas' : modalidadeAtiva === 'acao' ? '⚡ Ação & Expressão' : '❓ Mestres do Saber';
+
+    return (
+      <div className="flex flex-col items-center justify-center p-6 space-y-6 w-full max-w-md mx-auto min-h-screen">
+        <div className="w-full flex items-center justify-between">
+          <button 
+            onClick={() => setTelaAtual('modalidade')} 
+            className="flex items-center gap-1 text-xs font-black text-holy-card bg-white px-3.5 py-2 rounded-xl shadow-sm border border-orange-100/30 transition-all hover:bg-orange-50 active:scale-95"
+          >
+            <ArrowLeft size={14} /> Voltar
+          </button>
+          <h2 className="text-xs font-black uppercase text-gray-400 tracking-wider">{tituloModalidade}</h2>
+        </div>
+
+        <div className="w-full text-center space-y-1">
+          <h1 className={`text-4xl font-extrabold ${theme.textMain} tracking-tight font-sans`}>Game Bless</h1>
+          <p className="text-xs text-gray-500 font-black uppercase tracking-wider">Selecione o Baralho</p>
+        </div>
+
+        {loading ? (
+          <div className="flex flex-col items-center space-y-4">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-holy-card"></div>
+            <p className="text-sm text-gray-600">Carregando baralhos...</p>
+          </div>
+        ) : (
+          <div className="w-full grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-1 pb-2">
+            {jogosFiltrados.map((jogo) => (
+              <button
+                key={jogo.id}
+                onClick={() => verRegras(jogo)}
+                className="flex flex-col bg-white rounded-3xl overflow-hidden shadow-md border border-orange-100/50 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 text-left group"
+              >
+                <div className="w-full aspect-[4/3] bg-orange-50 overflow-hidden relative border-b border-orange-100/30">
+                  <img 
+                    src={jogo.capa || "/hero.png"} 
+                    alt={jogo.nome} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-3 w-full flex-1 flex flex-col justify-between" style={{ borderTop: `4px solid ${jogo.cor}` }}>
+                  <h3 className="text-xs font-black text-holy-text leading-tight group-hover:text-holy-card transition-colors min-h-[30px] flex items-center">{jogo.nome}</h3>
+                  <div className="mt-2 flex items-center justify-between text-[10px] font-black text-holy-card uppercase tracking-wider">
+                    <span>Selecionar</span>
+                    <Play size={10} fill="currentColor" />
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const TelaRegras = () => (
     <div className={`flex flex-col items-center justify-center p-6 space-y-6 w-full max-w-md mx-auto min-h-screen ${theme.bgApp} max-h-screen overflow-y-auto`}>
@@ -418,7 +482,7 @@ export default function App() {
 
           {/* Configuração de Equipes */}
           {modoJogo === 'equipes' && (
-            <div className="space-y-3 bg-orange-50/30 p-3 rounded-2xl border border-orange-100/50 mt-2 animate-fade-in">
+            <div className="space-y-3 bg-orange-50/30 p-3 rounded-2xl border border-orange-100/50 mt-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black text-holy-text">Qtd. de Equipes:</span>
                 <div className="flex gap-1.5">
@@ -442,7 +506,6 @@ export default function App() {
               <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
                 {Array.from({ length: quantidadeEquipes }).map((_, i) => (
                   <div key={i} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-orange-100/40">
-                    {/* Círculo indicador de cor */}
                     <div 
                       className="w-5 h-5 rounded-full border border-black/10 shadow-sm flex-shrink-0 cursor-pointer"
                       style={{ backgroundColor: equipes[i]?.cor || '#EF4444' }}
@@ -452,8 +515,6 @@ export default function App() {
                         editarCorEquipe(i, proximaCor);
                       }}
                     />
-                    
-                    {/* Input Nome */}
                     <input 
                       type="text"
                       value={equipes[i]?.nome || `Equipe ${i+1}`}
@@ -624,7 +685,6 @@ export default function App() {
             )}
           </div>
 
-          {/* Mostrar Resposta Oculta no Quiz de apoio se necessário */}
           <div className="pt-1.5 border-t border-gray-100 mt-2 flex justify-center">
             {respostaRevelada ? (
               <p className="text-xs font-bold text-green-600">A alternativa correta é: {carta.resposta}</p>
@@ -648,7 +708,6 @@ export default function App() {
     </div>
   );
 
-  // Painel Multiplayer Especial do "Faz Sentido?"
   const TelaJogandoFazSentido = ({ carta }) => (
     <div className="flex flex-col h-full justify-between items-center space-y-4 w-full">
       <div className="text-center space-y-3 w-full">
@@ -722,14 +781,14 @@ export default function App() {
     return (
       <div 
         style={{ backgroundColor: jogoAtivo.cor }} 
-        className="flex flex-col p-6 w-full max-w-md mx-auto min-h-screen transition-colors duration-300 justify-between"
+        className="flex flex-col p-6 w-full max-w-md mx-auto min-h-screen transition-colors duration-300 justify-between animate-fade-in"
       >
         {/* Cabeçalho */}
-        <div className="w-full">
+        <div className="w-full animate-fade-in">
           <div className="flex justify-between items-center text-white mb-3">
             <button onClick={() => { setTimerAtivo(false); setTelaAtual('menu'); }} className="p-2.5 bg-black/15 hover:bg-black/25 rounded-full transition-colors"><Home size={18} /></button>
             
-            {/* Cronômetro Isolado para Evitar Re-render no Pai e sanar o flicker */}
+            {/* Cronômetro Isolado para Evitar Re-render no Pai */}
             <div className="flex items-center space-x-2 bg-black/15 px-3 py-1.5 rounded-full font-mono font-bold">
               <Clock size={16} />
               <Cronometro 
@@ -759,18 +818,18 @@ export default function App() {
           {modoJogo === 'equipes' && (
             <div 
               style={{ borderLeft: `5px solid ${equipes[equipeAtivaIndex].cor}` }}
-              className="bg-black/20 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center justify-between mb-4 animate-fade-in"
+              className="bg-black/20 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center justify-between mb-4"
             >
               <span>VEZ DE JOGAR:</span>
-              <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow-sm" style={{ backgroundColor: equipes[equipeAtivaIndex].cor }}>
+              <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow-sm animate-pulse" style={{ backgroundColor: equipes[equipeAtivaIndex].cor }}>
                 {equipes[equipeAtivaIndex].nome}
               </span>
             </div>
           )}
         </div>
 
-        {/* Corpo da Carta (Isolado e estável) */}
-        <div className="flex-1 flex items-center justify-center w-full my-auto">
+        {/* Corpo da Carta */}
+        <div className="flex-1 flex items-center justify-center w-full my-auto animate-fade-in">
           {isFazSentido ? (
             <TelaJogandoFazSentido carta={carta} />
           ) : jogoAtivo.tipo === 'acao' ? (
@@ -783,7 +842,7 @@ export default function App() {
         </div>
 
         {/* Painel de Rodada e Ações de Avanço */}
-        <div className="w-full mt-4">
+        <div className="w-full mt-4 animate-fade-in">
           
           {/* Placar de Equipes Horizontal */}
           {modoJogo === 'equipes' && (
@@ -801,7 +860,7 @@ export default function App() {
           )}
 
           {/* Botões de Ação */}
-          <div className="flex justify-between gap-4 pb-2">
+          <div className="flex justify-center items-center gap-4 pb-2 w-full max-w-sm mx-auto">
             {isFazSentido ? (
               <button 
                 onClick={() => proximaCarta(false)} 
@@ -810,20 +869,33 @@ export default function App() {
                 Próxima Rodada <ChevronRight size={22} />
               </button>
             ) : jogoAtivo.tipo !== 'quiz' && (
-              <>
+              <div className="flex justify-between items-center w-full gap-4">
+                {/* Botão Errou - Apenas Ícone */}
                 <button 
                   onClick={() => proximaCarta(false)} 
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white p-4.5 rounded-2xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
+                  title="Errou"
+                  className="w-16 h-16 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all active:scale-90"
                 >
-                  <X size={22} /> Pular
+                  <ThumbsDown size={28} />
                 </button>
+
+                {/* Botão Pular - Menor e Discreto */}
+                <button 
+                  onClick={() => proximaCarta(false)} 
+                  className="flex-1 bg-white/20 hover:bg-white/30 text-white border border-white/25 py-3.5 rounded-2xl font-bold text-sm shadow flex items-center justify-center gap-1 transition-all active:scale-95"
+                >
+                  <X size={16} /> Pular
+                </button>
+
+                {/* Botão Acertou - Apenas Ícone */}
                 <button 
                   onClick={() => proximaCarta(true)} 
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white p-4.5 rounded-2xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
+                  title="Acertou!"
+                  className="w-16 h-16 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all active:scale-90"
                 >
-                  <Check size={22} /> Acertou!
+                  <Check size={32} />
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -832,7 +904,6 @@ export default function App() {
   };
 
   const TelaResultado = () => {
-    // Ordenação do placar para o modo equipes
     const equipesOrdenadas = [...equipes]
       .slice(0, quantidadeEquipes)
       .sort((a, b) => b.pontos - a.pontos);
@@ -858,7 +929,6 @@ export default function App() {
               <p className="text-sm text-gray-500 font-bold uppercase tracking-wider">cartas acertadas</p>
             </div>
           ) : (
-            // Pódio Modo Equipes
             <div className="space-y-3.5 text-left pt-2">
               <p className="text-xs font-black uppercase text-gray-400 tracking-wider text-center mb-1">Classificação Final</p>
               <div className="space-y-2.5">
@@ -899,7 +969,8 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen ${telaAtual === 'menu' || telaAtual === 'regras' || telaAtual === 'resultado' ? theme.bgApp : ''} font-sans selection:bg-orange-200`}>
+    <div className={`min-h-screen ${telaAtual !== 'jogando' ? theme.bgApp : ''} font-sans selection:bg-orange-200`}>
+      {telaAtual === 'modalidade' && <TelaEscolhaModalidade />}
       {telaAtual === 'menu' && <TelaMenu />}
       {telaAtual === 'regras' && <TelaRegras />}
       {telaAtual === 'jogando' && <TelaJogando />}
